@@ -1,9 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Calendar, MapPin } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { TrendingUp, Calendar, MapPin, Download, Printer } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const PredictionHistory = () => {
+  const { toast } = useToast();
+  
   // Mock history data - in real app, this would come from database
   const mockHistory = [
     {
@@ -44,13 +48,41 @@ const PredictionHistory = () => {
     }
   };
 
+  const handleDownload = () => {
+    toast({
+      title: "Download Started",
+      description: "Your prediction history is being downloaded as PDF."
+    });
+    // In real app, this would generate and download PDF
+  };
+
+  const handlePrint = () => {
+    window.print();
+    toast({
+      title: "Print Dialog Opened",
+      description: "You can now print your prediction history."
+    });
+  };
+
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Calendar className="h-5 w-5 text-primary" />
-            <span>Prediction History</span>
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Calendar className="h-5 w-5 text-primary" />
+              <span>Prediction History</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button variant="outline" size="sm" onClick={handleDownload}>
+                <Download className="h-4 w-4 mr-2" />
+                Download
+              </Button>
+              <Button variant="outline" size="sm" onClick={handlePrint}>
+                <Printer className="h-4 w-4 mr-2" />
+                Print
+              </Button>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>

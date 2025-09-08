@@ -1,5 +1,8 @@
 import { Sprout, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import LanguageSwitcher from "./LanguageSwitcher";
+import VoiceAssistant from "./VoiceAssistant";
+import OfflineIndicator from "./OfflineIndicator";
 
 interface HeaderProps {
   currentSection: string;
@@ -20,7 +23,7 @@ const Header = ({ currentSection, onNavigate }: HeaderProps) => {
           </div>
           
           {/* Navigation for larger screens */}
-          <nav className="hidden md:flex space-x-4">
+          <nav className="hidden md:flex items-center space-x-4">
             <Button
               variant={currentSection === 'home' ? 'default' : 'secondary'}
               onClick={() => onNavigate('home')}
@@ -42,6 +45,18 @@ const Header = ({ currentSection, onNavigate }: HeaderProps) => {
             >
               History
             </Button>
+            <Button
+              variant={currentSection === 'community' ? 'default' : 'secondary'}
+              onClick={() => onNavigate('community')}
+              className="text-sm"
+            >
+              Community
+            </Button>
+            <div className="flex items-center space-x-2">
+              <OfflineIndicator />
+              <VoiceAssistant />
+              <LanguageSwitcher />
+            </div>
           </nav>
           
           {/* Mobile menu button */}

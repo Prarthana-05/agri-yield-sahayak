@@ -1,6 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Droplets, Zap, Bug, Calendar } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { TrendingUp, Droplets, Zap, Bug, Calendar, BarChart3, TrendingDown, Lightbulb, Wheat } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 interface PredictionDisplayProps {
   cropData: any;
@@ -23,8 +26,18 @@ const PredictionDisplay = ({ cropData, soilData }: PredictionDisplayProps) => {
       pulses: 8
     };
 
+    const regionalAverage = {
+      wheat: 20,
+      rice: 32,
+      maize: 25,
+      cotton: 10,
+      sugarcane: 400,
+      pulses: 7
+    };
+
     const crop = cropData.crop;
     let predictedYield = baseYield[crop as keyof typeof baseYield] || 20;
+    const regionalAvg = regionalAverage[crop as keyof typeof regionalAverage] || 18;
 
     // Adjust based on soil conditions
     const ph = parseFloat(soilData.ph);
@@ -35,10 +48,47 @@ const PredictionDisplay = ({ cropData, soilData }: PredictionDisplayProps) => {
     if (npkAvg > 40) predictedYield *= 1.15;
     if (npkAvg < 20) predictedYield *= 0.85;
 
-    return Math.round(predictedYield * 100) / 100;
+    const finalYield = Math.round(predictedYield * 100) / 100;
+    const confidence = npkAvg > 30 && ph >= 6.0 && ph <= 7.5 ? 'High' : npkAvg > 20 ? 'Medium' : 'Low';
+    const costPerAcre = crop === 'sugarcane' ? 25000 : 8000;
+    const pricePerUnit = crop === 'sugarcane' ? 3000 : 2000;
+    const expectedRevenue = finalYield * pricePerUnit;
+    const expectedProfit = expectedRevenue - costPerAcre;
+
+    return {
+      yield: finalYield,
+      regionalAverage: regionalAvg,
+      confidence,
+      costPerAcre,
+      expectedRevenue,
+      expectedProfit,
+      improvement: ((finalYield - regionalAvg) / regionalAvg * 100).toFixed(1)
+    };
   };
 
   const prediction = generatePrediction();
+
+  // Mock chart data
+  const yieldChartData = [
+    { month: 'Jan', current: 18, average: 16 },
+    { month: 'Feb', current: 20, average: 18 },
+    { month: 'Mar', current: 22, average: 19 },
+    { month: 'Apr', current: prediction?.yield || 25, average: prediction?.regionalAverage || 20 },
+    { month: 'May', current: 26, average: 21 },
+    { month: 'Jun', current: 24, average: 20 }
+  ];
+
+  const profitData = [
+    { aspect: 'Cost', amount: prediction?.costPerAcre || 8000 },
+    { aspect: 'Revenue', amount: prediction?.expectedRevenue || 20000 },
+    { aspect: 'Profit', amount: prediction?.expectedProfit || 12000 }
+  ];
+
+  const alternativeCrops = [
+    { crop: 'Maize', yield: '28 quintals/acre', suitability: 85 },
+    { crop: 'Pulses', yield: '8 quintals/acre', suitability: 78 },
+    { crop: 'Cotton', yield: '12 quintals/acre', suitability: 72 }
+  ].filter(alt => alt.crop.toLowerCase() !== cropData.crop?.toLowerCase());
 
   if (!prediction) {
     return (
@@ -56,16 +106,16 @@ const PredictionDisplay = ({ cropData, soilData }: PredictionDisplayProps) => {
       icon: Droplets,
       title: "Irrigation Advice",
       advice: soilData.rainfall < 100 
-        ? "Increase irrigation frequency. Soil moisture seems low based on rainfall data."
-        : "Current irrigation schedule looks good. Monitor soil moisture regularly.",
+        ? "Increase irrigation frequency. Apply 25-30mm water twice weekly."
+        : "Apply 20mm water weekly. Use drip irrigation for efficiency.",
       color: "text-water"
     },
     {
       icon: Zap,
       title: "Fertilizer Recommendation", 
       advice: (parseFloat(soilData.nitrogen || 0) + parseFloat(soilData.phosphorus || 0) + parseFloat(soilData.potassium || 0)) / 3 < 30
-        ? "Apply balanced NPK fertilizer. Consider organic compost to improve soil health."
-        : "Soil nutrients look adequate. Apply maintenance fertilizer as per crop calendar.",
+        ? `Apply NPK 12:32:16 @ 150kg/acre. Add ${cropData.crop === 'rice' ? 'Urea 100kg' : 'DAP 50kg'}/acre.`
+        : `Maintain with NPK 10:26:26 @ 100kg/acre. Apply ${cropData.crop === 'wheat' ? 'Urea' : 'MOP'} as needed.`,
       color: "text-fertilizer"
     },
     {
@@ -80,31 +130,104 @@ const PredictionDisplay = ({ cropData, soilData }: PredictionDisplayProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Yield Prediction */}
-      <Card className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
+      {/* Enhanced Yield Prediction */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between text-xl">
+              <div className="flex items-center space-x-2">
+                <TrendingUp className="h-6 w-6" />
+                <span>Yield Prediction</span>
+              </div>
+              <Badge className={`${prediction.confidence === 'High' ? 'bg-green-500' : prediction.confidence === 'Medium' ? 'bg-yellow-500' : 'bg-red-500'} text-white`}>
+                {prediction.confidence} Confidence
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center">
+              <div className="text-4xl font-bold mb-2">{prediction.yield}</div>
+              <div className="text-lg opacity-90">
+                {cropData.crop === 'sugarcane' ? 'tons/hectare' : 'quintals/acre'}
+              </div>
+              <p className="mt-4 opacity-90">
+                Expected yield for {cropData.crop} in {cropData.location || 'your area'}
+              </p>
+              <div className="mt-4 flex items-center justify-center space-x-4 text-sm">
+                <div className="flex items-center space-x-1">
+                  <TrendingUp className="h-4 w-4" />
+                  <span>{prediction.improvement}% vs regional avg</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <BarChart3 className="h-5 w-5 text-primary" />
+              <span>Yield Comparison</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={yieldChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="current" fill="hsl(var(--primary))" name="Your Yield" />
+                <Bar dataKey="average" fill="hsl(var(--muted))" name="Regional Avg" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Financial Analysis */}
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2 text-xl">
-            <TrendingUp className="h-6 w-6" />
-            <span>Yield Prediction</span>
+          <CardTitle className="flex items-center space-x-2">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            <span>Cost vs Profit Analysis</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center">
-            <div className="text-4xl font-bold mb-2">{prediction}</div>
-            <div className="text-lg opacity-90">
-              {cropData.crop === 'sugarcane' ? 'tons/hectare' : 'quintals/acre'}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span>Investment Cost:</span>
+                <span className="font-bold">₹{prediction.costPerAcre.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span>Expected Revenue:</span>
+                <span className="font-bold text-primary">₹{prediction.expectedRevenue.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between items-center border-t pt-2">
+                <span className="font-semibold">Expected Profit:</span>
+                <span className={`font-bold ${prediction.expectedProfit > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  ₹{prediction.expectedProfit.toLocaleString()}
+                </span>
+              </div>
             </div>
-            <p className="mt-4 opacity-90">
-              Expected yield for {cropData.crop} in {cropData.location || 'your area'}
-            </p>
+            <ResponsiveContainer width="100%" height={150}>
+              <BarChart data={profitData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="aspect" />
+                <YAxis />
+                <Tooltip formatter={(value) => `₹${value.toLocaleString()}`} />
+                <Bar dataKey="amount" fill="hsl(var(--primary))" />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </CardContent>
       </Card>
 
-      {/* Recommendations */}
+      {/* Enhanced Recommendations */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {recommendations.map((rec, index) => (
-          <Card key={index} className="bg-card">
+          <Card key={index} className="bg-card hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center space-x-2 text-lg">
                 <rec.icon className={`h-5 w-5 ${rec.color}`} />
@@ -119,6 +242,34 @@ const PredictionDisplay = ({ cropData, soilData }: PredictionDisplayProps) => {
           </Card>
         ))}
       </div>
+
+      {/* Alternative Crops Suggestion */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Lightbulb className="h-5 w-5 text-primary" />
+            <span>Alternative Crop Suggestions</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {alternativeCrops.slice(0, 3).map((alt, index) => (
+              <div key={index} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Wheat className="h-4 w-4 text-primary" />
+                  <span className="font-semibold">{alt.crop}</span>
+                </div>
+                <p className="text-sm text-muted-foreground mb-2">Expected: {alt.yield}</p>
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs">Suitability:</span>
+                  <Progress value={alt.suitability} className="flex-1" />
+                  <span className="text-xs font-medium">{alt.suitability}%</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Save Prediction Button */}
       <Card>

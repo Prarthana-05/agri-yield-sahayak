@@ -7,6 +7,8 @@ import CropSelection from "./CropSelection";
 import SoilInput from "./SoilInput";
 import PredictionDisplay from "./PredictionDisplay";
 import PredictionHistory from "./PredictionHistory";
+import CommunityForum from "./CommunityForum";
+import { Toaster } from "@/components/ui/toaster";
 
 const AgriYieldApp = () => {
   const [currentSection, setCurrentSection] = useState('home');
@@ -31,6 +33,10 @@ const AgriYieldApp = () => {
   const renderMainContent = () => {
     if (currentSection === 'history') {
       return <PredictionHistory />;
+    }
+
+    if (currentSection === 'community') {
+      return <CommunityForum />;
     }
 
     if (currentSection === 'prediction' && showPrediction) {
@@ -80,7 +86,7 @@ const AgriYieldApp = () => {
 
       {/* Bottom navigation for mobile */}
       <div className="fixed bottom-0 left-0 right-0 bg-card border-t md:hidden">
-        <div className="grid grid-cols-3 gap-1 p-2">
+        <div className="grid grid-cols-4 gap-1 p-2">
           <Button
             variant={currentSection === 'home' ? 'default' : 'ghost'}
             onClick={() => handleNavigate('home')}
@@ -106,8 +112,17 @@ const AgriYieldApp = () => {
           >
             <span className="text-xs">History</span>
           </Button>
+          <Button
+            variant={currentSection === 'community' ? 'default' : 'ghost'}
+            onClick={() => handleNavigate('community')}
+            className="flex-col h-auto py-2"
+            size="sm"
+          >
+            <span className="text-xs">Community</span>
+          </Button>
         </div>
       </div>
+      <Toaster />
     </div>
   );
 };
