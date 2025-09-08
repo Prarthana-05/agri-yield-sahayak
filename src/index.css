@@ -8,35 +8,47 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Agricultural Theme - Greens and Earthy Tones */
+    --background: 48 20% 95%;
+    --foreground: 120 15% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 120 15% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 120 15% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 120 60% 25%; /* Deep agricultural green */
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 85 40% 85%; /* Light sage green */
+    --secondary-foreground: 120 15% 15%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 85 30% 90%;
+    --muted-foreground: 120 10% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 45 80% 55%; /* Warm golden yellow for crops */
+    --accent-foreground: 120 15% 15%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 85 20% 80%;
+    --input: 85 20% 85%;
+    --ring: 120 60% 25%;
 
-    --radius: 0.5rem;
+    /* Agricultural specific colors */
+    --soil-brown: 30 40% 35%;
+    --crop-gold: 45 85% 60%;
+    --water-blue: 200 75% 55%;
+    --fertilizer-orange: 25 85% 60%;
+
+    /* Gradients */
+    --gradient-field: linear-gradient(135deg, hsl(120 50% 45%), hsl(85 60% 50%));
+    --gradient-earth: linear-gradient(180deg, hsl(85 40% 85%), hsl(30 30% 75%));
+    --gradient-sky: linear-gradient(180deg, hsl(200 60% 85%), hsl(85 40% 85%));
+
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
 
